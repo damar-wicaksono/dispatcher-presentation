@@ -365,7 +365,7 @@ ans =
 \begin{frame}[fragile]{\textsc{Dispatcher} in action: \emph{Dispatch} a computation}
 
 \begin{lstlisting}[basicstyle=\scriptsize,numbers=none]
->> uq_evalModel(myModel,X,'HPC')
+>> uq_evalModel(myModel, X, 'HPC')
   
 ans =
   
@@ -392,28 +392,10 @@ ans =
     
 \begin{figure}[htbp]    
   \centering
-  \includegraphics[width= 0.8\textwidth]{./figures/dispatch-and-fetch-fetchResults.pdf}
+  \includegraphics[width= 0.8\textwidth]{./figures/dispatch-and-fetch-asynchronous.pdf}
 \end{figure}
   
 \end{frame}
-
-%==============================================================================
-\begin{frame}[fragile]{Dispatcher in action: asynchronous execution}
-
-  \begin{lstlisting}[basicstyle=\scriptsize,numbers=none]
-  >> uq_evalModel(myModel,X,'HPC')
-      
-  ans =
-  
-      []
-  \end{lstlisting}
-      
-  \begin{figure}[htbp]    
-    \centering
-    \includegraphics[width= 0.8\textwidth]{./figures/dispatch-and-fetch-fetchResults.pdf}
-  \end{figure}
-    
-  \end{frame}
 
 %==============================================================================
 \begin{frame}[fragile]{Dispatcher in action: \emph{Get status}}
