@@ -173,26 +173,26 @@ ans =
 \begin{columns}
 \column{0.4\textwidth}
 \setbeamercovered{invisible}
-\begin{block}{}
+\begin{block}{The steps:}
 \begin{enumerate}
-  \item<2-> Login to the remote machine
+  \item<2-> Log in to the remote machine
   \item<4-> Create an analysis script to run in the remote
   \item<5-> Create a job script
   \item<6-> Submit the job to the queues
   \item<7-> Check the queues until job is finished
   \item<8-> Transfer output files back (\texttt{scp},\texttt{rsync})
-  \item<9-> Analyze outputs in the local machine
+  \item<9-> Analyze the outputs in the local machine
 \end{enumerate}
 \end{block}
 \column{0.6\textwidth}
 \begin{onlyenv}<2-9>
 \begin{figure}[htbp]
   \includegraphics<2-3>[width=\textwidth]{./figures/terminal-small.png}
-  \includegraphics<4>[width=\textwidth]{./figures/remoteScript.png}
+  \includegraphics<4>[width=\textwidth]{./figures/remote-script.png}
   \includegraphics<5>[width=\textwidth]{./figures/job-script.png}
-  \includegraphics<6>[width=\textwidth]{./figures/terminal-small.png}
-  \includegraphics<7>[width=\textwidth]{./figures/terminal-small.png}
-  \includegraphics<8>[width=\textwidth]{./figures/terminal-small.png}
+  \includegraphics<6>[width=\textwidth]{./figures/queues.png}
+  \includegraphics<7>[width=\textwidth]{./figures/check-queues.png}
+  \includegraphics<8>[width=\textwidth]{./figures/scp.png}
   \includegraphics<9>[width=\textwidth]{./figures/matlab.png}
 \end{figure}
 \end{onlyenv}
@@ -213,7 +213,7 @@ ans =
 \frametitle{Introducing the HPC \textsc{Dispatcher} module}
 
 \begin{figure}[htbp]
-  \includegraphics[width=\textwidth]{./figures/dispatcher-module.pdf}
+  \includegraphics[width=0.95\textwidth]{./figures/dispatcher-module.pdf}
 \end{figure}    
 
 \begin{onlyenv}<1>
@@ -243,7 +243,7 @@ ans =
 \begin{onslide}<3->
   \begin{block}{...and less about:}
     \begin{itemize}
-      \item Distributed computing system
+      \item Distributed computing system and organization
       \item Parallel algorithms and programming
     \end{itemize}
   \end{block}
