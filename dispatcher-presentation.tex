@@ -67,7 +67,7 @@ Quantification -- ETH Z\"urich}
 
 \begin{block}{Some problems \textsc{UQLab} users might have:}
 \begin{itemize}
-  \item They need to run long-running computation; they only have their laptops\\
+  \item They need to run long computations; they only have their laptops\\
         \onslide<2>{\textcolor{myviolet}{$\rightarrow$ freeing up local computing resources}}
   \item They need to run computations with large memory or CPU requirements\\
         \onslide<2>{\textcolor{myviolet}{$\rightarrow$ exceptional resources (CPU, memory) requirement}}
@@ -88,7 +88,7 @@ Quantification -- ETH Z\"urich}
         \onslide<2>{(\textcolor{myviolet}{\textbf{not always}})}
   \item They have massive amount of high-performance CPUs, memory, and storage
         \onslide<2>{(\textcolor{myviolet}{\textbf{not always}})}
-  \item They come with expensive software installed with shared licenses
+  \item They come with expensive (shared) licensed software installed
         \onslide<2>{(\textcolor{myviolet}{\textbf{not always}})}
 \end{itemize}
 \end{block}
@@ -243,30 +243,6 @@ Quantification -- ETH Z\"urich}
 \end{onslide}
 \end{onlyenv}
 \setbeamercovered{transparent}
-
-\end{frame}
-
-\begin{frame}[fragile]{Introducing the HPC \textsc{Dispatcher} module}
-
-Watch this slide grow.
-\pause
-\begin{itemize}
-  \item<2-> Hello, World!
-  \item<3-> Hello, Mars!
-  \item<4-> \textbf<5->{Hello}, Alpha Centauri!
-\end{itemize}
-  
-\end{frame}
-
-\begin{frame}[fragile]{\texttt{uq\_map}: Mapping function}
-
-\begin{lstlisting}
-uq_map(|\textcolor<2>{myviolet}{fun}|,|\textcolor<3>{myviolet}{inputs}|)
-\end{lstlisting}
-\begin{itemize}
-  \item \textcolor<2>{myviolet}{mapping function}
-  \item \textcolor<3>{myviolet}{input sequence}
-\end{itemize}
 
 \end{frame}
 
@@ -536,7 +512,6 @@ evaluate \mcode{fun} \textbf{for each} element of \mcode{inputs}.
 
 \end{frame}
 
-
 %==============================================================================
 \begin{frame}[fragile]{The basic ingredients: mapping function}
 
@@ -622,7 +597,7 @@ but with focus on \mcode{inputs} as a sequence/collection instead of its data ty
       \includegraphics[width=0.8\textwidth]{./figures/uq-map-cellarray-expand-false.png}
     \end{figure}
   \end{itemize}
-\emphconc{Structure and cell arrays can contain most data users need.
+\emphconc{Structure and cell arrays can contain most types of data users need.
   Matrices and vectors are supported as a shortcut.}  
 \end{onlyenv}
     
@@ -667,9 +642,9 @@ uq_map(fun, inputs, DispatcherObj)
 \begin{block}{\mcode{uq_map} is a dispatcher-aware function}
 \begin{itemize}
   \item Its computation can be dispatched to a remote machine
-  \item It only requires remote \textsc{UQLab} only if \textsc{UQLab}'s functionalities are used
+  \item It only requires remote \textsc{UQLab} if \textsc{UQLab}'s functionalities are used
   \item Support advanced functionalities,
-        e.g., attached files (functions and data) for a specific computation.
+        e.g., attached files (functions and data) and custom error handler for a specific computation
   \item Same workflow as dispatched \mcode{uq_evalModel}
 \end{itemize}
 \end{block}
@@ -864,109 +839,245 @@ An example of distributed computing on a ({\altx \textbf{not}} high performance)
   \item 3rd-party code is executed on the remote (must be installed there) 
   \item Output files are parsed locally
 \end{itemize}
-  
+
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=\textwidth]{./figures/dispatch-droplet.pdf}
+  \includegraphics<1>[width=\textwidth]{./figures/dispatch-droplet.pdf}
 \end{figure}
 
+\begin{onlyenv}<2>
+A minor modification to \textsc{uqlink} \textsc{model} options:
+\begin{lstlisting}[numbers=none]
+% Location of the external executable in the remote machine
+EXECPATH = '/home/cluster/code/simply-supported-beam';
+ModelOpts.ExecutablePath = EXECPATH;
+% No MATLAB in the remote
+ModelOpts.RemoteMATLAB = false;
+\end{lstlisting}
+\end{onlyenv}
+\emphconc{\textcolor{red}{
+  Transferring input/output files of 3rd-party code over the network can be expensive!}}
 \end{frame}
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Parametric study}
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %==============================================================================
-\begin{frame}[fragile]{Use case: parametric study of Kriging metamodel construction}
+\begin{frame}[fragile]{Use case: parametric study of a metamodel construction}
+
+\begin{block}{Create PCE metamodels on the 10-dimensional Truss data set}
+\begin{itemize}
+  \item Methods: \mcode{'OLS'}, \mcode{'LARS'}, \mcode{'OMP'}
+  \item Degrees: $1$, $2$, $3$, $4$, $5$
+  \item QoI: LOO and validation errors
+\end{itemize}
+\end{block}
+
+\begin{onlyenv}<2>
+\emphconc{There are multiple ways to do this with \mcode{uq_map}. Here is just one possibility}
+\end{onlyenv}
+
 \end{frame}
 
+%==============================================================================
+\begin{frame}[fragile]{Use case: parametric study of a metamodel construction}
+
+\begin{onlyenv}<1>
+\begin{lstlisting}[basicstyle=\small,numbers=none]
+uq_map(@myWrapper, ParamSets, myDispatcher,...
+    'Parameters', Params,...
+    'UQLab',true);
+\end{lstlisting}
+\end{onlyenv}
+
+The components:
+\begin{itemize}
+  \item \mcode{myWrapper}: an \emph{ad-hoc} wrapper function to get the QoIs and provide basic error handling
+  \item \mcode{ParamSets}: the set of all possible configuration options
+  \item \mcode{myDispatcher}: the \textsc{Dispatcher} object
+  \item \mcode{'Parameters'}: a named argument to specify parameters in order to avoid duplications of data
+  \item \mcode{'UQLab'}: a flag to load UQLab in the remote machine 
+\end{itemize}
+    
+\end{frame}
+
+%==============================================================================
+\begin{frame}[fragile]{Use case: parametric study of a metamodel construction}
+
+\begin{onlyenv}<1>
+\begin{itemize}
+  \item The wrapper function
+\end{itemize}
+\begin{lstlisting}
+function Error = myWrapper(MetaOpts,Params)
+
+rng(100,'twister')
+
+MetaOpts.ExpDesign.X = Params.ExpDesign.X;
+MetaOpts.ExpDesign.Y = Params.ExpDesign.Y;
+MetaOpts.ValidationSet.X = Params.ValidationSet.X;
+MetaOpts.ValidationSet.Y = Params.ValidationSet.Y;
+MetaOpts.Input = Params.Input;
+MetaOpts.Display = 'quiet';
+  
+try
+    ModelObj = uq_createModel(MetaOpts,'-private');
+    Error.Val = ModelObj.Error.Val;
+    Error.LOO = ModelObj.Error.LOO;
+catch ME
+    Error = ME;
+end
+
+end
+\end{lstlisting}
+\end{onlyenv}
+
+
+\begin{onlyenv}<2>
+\begin{itemize}
+  \item The set of configuration options
+\end{itemize}
+\begin{lstlisting}
+ParametricOpts.Type = 'Metamodel';
+ParametricOpts.MetaType = 'PCE';
+  
+ParametricOpts.Degree = {1,2,3,4,5};
+ParametricOpts.Method = {'OLS', 'LARS', 'OMP'};
+
+ParamSets = uq_createParameterSets(ParametricOpts)
+\end{lstlisting}
+
+\begin{lstlisting}[numbers=none]
+ParamSets = 
+
+  15x1 struct array with fields:
+
+    Type
+    MetaType
+    Degree
+    Method
+    Name
+\end{lstlisting}
+
+\end{onlyenv}
+
+\begin{onlyenv}<3>
+\begin{itemize}
+  \item The parameters (i.e., the \emph{constant})
+\end{itemize}
+\begin{lstlisting}
+Params.ExpDesign.X = X;
+Params.ExpDesign.Y = Y;
+Params.ValidationSet.X = Xval;
+Params.ValidationSet.Y = Yval;
+Params.Input;  % INPUT object already created
+\end{lstlisting}
+\end{onlyenv}
+
+\begin{onlyenv}<4>
+\begin{itemize}
+\item Dispatch the computation:
+\end{itemize}
+\begin{lstlisting}[numbers=none]
+>> uq_map(@myWrapper, ParamSets, myDispatcher,...
+      'Parameters', Params,...
+      'UQLab',true);
+\end{lstlisting}
+\begin{itemize}
+  \item Wait for the job:
+\end{itemize}
+\begin{lstlisting}[numbers=none]
+>> uq_waitForJob(myDispatcher);
+\end{lstlisting}
+\begin{itemize}
+\item Fetch the results:
+\end{itemize}
+\begin{lstlisting}[numbers=none]
+>> myErrorsPCE = uq_fetchResults(myDispatcher);
+\end{lstlisting}
+\begin{itemize}
+  \item Find the \emph{best} configuration:
+\end{itemize}
+\begin{lstlisting}[numbers=none]
+>> ParamSets(bestIdx)
+ans = 
+  struct with fields:
+        Type: 'Metamodel'
+    MetaType: 'PCE'
+      Degree: 4
+      Method: 'OMP'
+        Name: 'Model 12'
+\end{lstlisting}
+\end{onlyenv}
+
+\end{frame}
+
+%==============================================================================
+\begin{frame}[fragile]{Use case: parametric study of a metamodel construction}
+
+\begin{onlyenv}<1>
+\emphconc{With the same approach, we can tackle the same but much larger problem
+  (2'400 configuration options).}  
+\end{onlyenv}
+\begin{onlyenv}<2>
+Set the \textsc{Dispatcher} property \mcode{NumCPUs} to run the computation in parallel: 
+\begin{lstlisting}[numbers=none]
+myDispatcher.NumCPUs = 8; % for example
+\end{lstlisting}
+\end{onlyenv}
+\begin{block}{Create Kriging metamodels on the 10-dimensional Truss data set}
+\begin{itemize}
+  \item Trend type: \mcode{'polynomial'}
+  \item Trend degree: $0$, $1$, $2$
+  \item Correlation type: \mcode{'ellipsoidal'}, \mcode{'separable'}
+  \item Correlation family; \mcode{'linear'}, \mcode{'exponential'},
+        \mcode{'gaussian'}, \mcode{'matern-3_2'}, \mcode{'matern-5_2'}
+  \item Isotropic correlation: true, false
+  \item Correlation matrix nugget: $0$, $10^{-10}$
+  \item Estimation method: \mcode{'ML'} (maximum likelihood),
+        \mcode{'CV'} (cross validation)
+  \item GP regression: true, false
+  \item Optimization method: \mcode{'BFGS'}, \mcode{'GA'}, \mcode{'HGA'}, \mcode{'CMAES'}, 
+        \mcode{'HCMAES'}
+  \item QoI: LOO and validation errors
+\end{itemize}
+\end{block}
+
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%
 \section{Summary}
+%%%%%%%%%%%%%%%%%
+
 %==============================================================================
 \begin{frame}[fragile]{Summary}
+
+\begin{block}{The HPC \textsc{Dispatcher} module and its capabilities have been introduced}
+\begin{itemize}
+  \item The module can help bridging the gap in using distributed computing resources (HPC or otherwise)
+        for some computations in UQ with \textsc{uqlab}
+  \item The module's main goal is to {\altx dispatch} a computation,
+        whether it makes sense to do that depends on the cases
+  \item A new worfklow for a dispatched computation (\emph{dispatch}-and-\emph{fetch})
+  \item The {\altx dispatcher-aware} \mcode{uq_evalModel} and \mcode{uq_map} are introduced
+\end{itemize}  
+\end{block}
+
+\begin{block}{A couple of use cases where dispatching makes sense have been presented}
+\begin{itemize}
+  \item \textsc{UQLink} \textsc{model} evaluation
+  \item large-scale parameteric studies of \textsc{UQLab} metamodel (can also be analysis) objects
+        construction
+\end{itemize}
+\end{block}
+
+\begin{onlyenv}<2>
+\emphconc{\textbf{Thank you very much for your attention!}}
+\end{onlyenv}
+
 \end{frame}
-
-
-%===============================================================================
-\begin{frame}{Some problems users might have}
-
-  \begin{itemize}
-    \item Dispatcher module has been updated: asynchronous mode of execution and 
-          a \emph{dispatch-and-fetch} workflow
-    \item Two dispatcher-aware functions are available:\\
-          \mcode{uq_evalModel} and \mcode{uq_map}.
-  \end{itemize}
-  
-  \begin{figure}
-    \centering
-    \includegraphics[width=1.0\linewidth]{./figures/dispatch-and-fetch.pdf}
-  \end{figure}
-  
-  \end{frame}
-  
-  
-  \begin{frame}[fragile]{Distributed computing resources might help...}
-  
-  \begin{enumerate}
-    \setcounter{enumi}{-1}
-    \item Create a \textsc{Dispatcher} object
-    \item Create a set of configuration options:
-  \end{enumerate}
-  \begin{lstlisting}[basicstyle=\scriptsize,numbers=none]
-  ParamsOpts.Type = 'Metamodel';
-  ParamsOpts.MetaType = 'Kriging';
-  
-  ParamsOpts.Trend.Type = {'polynomial'};
-  ParamsOpts.Trend.Degree = {0,1,2};
-  
-  ParamsOpts.Corr.Type = {'ellipsoidal', 'separable'};
-  ParamsOpts.Corr.Family = {'linear', 'exponential', 'gaussian',...
-      'matern-3_2','matern-5_2'};
-  ParamsOpts.Corr.Isotropic = {true, false};
-  
-  ParamsOpts.EstimMethod = {'CV','ML'};
-    
-  ParamsOpts.Optim.Method = {'BFGS', 'GA', 'HGA', 'CMAES', 'HCMAES'};
-    
-  ParamsOpts.ExpDesign.X = {Xtrain};
-  ParamsOpts.ExpDesign.Y = {Ytrain};
-  ParamsOpts.ValidationSet.X = {Xval};
-  ParamsOpts.ValidationSet.Y = {Yval};
-  
-  % Create the set, 600 configuration options (struct array)
-  ParamSets = uq_createParameterSets(ParamsOpts); 
-  \end{lstlisting}
-  
-  \end{frame}
-  
-  \begin{frame}[fragile]{Distributed computing resources might help, but...}
-  
-  \begin{enumerate}
-    \setcounter{enumi}{1}
-    \item \emph{Map} the set of configurations options using \mcode{uq_createModel}\\
-           and dispatch the calculation to the remote machine:
-  \begin{lstlisting}[basicstyle=\scriptsize]
-  uq_map(@uq_createModel, ParamSets, myDispatcher, 'UQLab', true)
-  \end{lstlisting}
-    \item (when finished) \emph{Fetch} all the Kriging objects from the remote machine:
-  \begin{lstlisting}[basicstyle=\scriptsize]
-  myModels = uq_fetchResults(myDispatcher)
-  ans =
-  
-    600x1 cell array
-  
-      {1x1 uq_model}
-      {1x1 uq_model}
-      {1x1 uq_model}
-      {1x1 uq_model}
-      {1x1 uq_model}
-      {1x1 uq_model}
-      ...
-  \end{lstlisting}
-    \item Analyze the resulting objects (\eg{,} compare LOO and validation errors)
-  \end{enumerate}
-  
-  \begin{itemize}
-    \item On-going tasks: Documentation writeup and some additional testings
-  \end{itemize}
-  
-  \end{frame}
   
 \end{document}
