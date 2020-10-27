@@ -228,7 +228,7 @@ Quantification -- ETH Z\"urich}
   \begin{block}{This presentation is about:}
     \begin{itemize}
       \item The HPC \textsc{dispatcher} module features
-      \item Its basic usage and (more advanced) use case
+      \item Its basic usage and a couple of more advanced use cases
     \end{itemize}
   \end{block}
 \end{onslide}
@@ -475,23 +475,6 @@ myDispatcher = uq_createDispatcher(DispatcherOpts);
 \end{frame}
 
 %==============================================================================
-\begin{frame}[fragile]{\textsc{UQLink} \textsc{model} evaluation in a cloud cluster}
-
-An example of distributed computing on a ({\altx not} high performance) cluster 
-\begin{itemize}
-  \item Input files are created locally
-  \item 3rd-party code is executed on the remote (must be installed there) 
-  \item Output files are parsed locally
-\end{itemize}
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=\textwidth]{./figures/dispatch-droplet.pdf}
-\end{figure}
-    
-\end{frame}
-
-%==============================================================================
 \begin{frame}[fragile]{Backtrack: Setting up a \textsc{Dispatcher} object}
 
 Additional settings in the remote profile file:
@@ -545,7 +528,7 @@ uq_map(fun,inputs)
 \end{figure}
 \end{onslide}
   
-\onslide<2->{\begin{block}{In plain english}
+\onslide<2->{\begin{block}{In plain English}
 evaluate \mcode{fun} \textbf{for each} element of \mcode{inputs}.
 \end{block}}
 
@@ -556,24 +539,189 @@ evaluate \mcode{fun} \textbf{for each} element of \mcode{inputs}.
 
 %==============================================================================
 \begin{frame}[fragile]{The basic ingredients: mapping function}
+
+\begin{onlyenv}<1>
+\begin{lstlisting}[basicstyle=\large,numbers=none]
+uq_map(|\textcolor<1>{myviolet}{fun}|,inputs)
+\end{lstlisting}
+\end{onlyenv}
+
+\begin{onlyenv}<1>
+\begin{block}{Supported functions as the mapping function:}
+\begin{itemize}
+  \item All built-in \textsc{matlab} functions (version dependent)
+  \item User-defined functions (in \mcode{m}-files)
+  \item Anonymous function
+  \item System command (cmd.exe in Windows, the selected shell interpreter in Linux)
+\end{itemize}
+\end{block}
+\end{onlyenv}
+
+\begin{onlyenv}<2>
+Some examples:
+\begin{itemize}
+  \item built-in functions
+  \begin{lstlisting}[numbers=none]
+>> uq_map(@sum, {[1 2 3], [4 5 6 7]}, "a")
+
+ans =
+
+  1x3 cell array
+
+  {[6]}    {[15]}    {[NaN]}
+\end{lstlisting}
+
+\item anonymous functions
+\begin{lstlisting}[numbers=none]
+>> fun = @(X) X * sin(X);
+>> uq_map(fun, linspace(-pi, pi, 3)')
+
+ans =
+
+  1x3 cell array
+
+  {[3.8473e-16]}
+  {[         0]}
+  {[3.8473e-16]}
+\end{lstlisting}
+
+\end{itemize}
+\end{onlyenv}
+
 \end{frame}
 
 %==============================================================================
 \begin{frame}[fragile]{The basic ingredients: input sequence}
-\end{frame}
 
-%==============================================================================
-\begin{frame}[fragile]{The other ingredients: optional arguments}
+\begin{onlyenv}<1>
+\begin{lstlisting}[basicstyle=\large,numbers=none]
+uq_map(fun,|\textcolor<1>{myviolet}{inputs}|)
+\end{lstlisting}
+\end{onlyenv}
+    
+\begin{onlyenv}<1>
+\begin{block}{Supported types of \mcode{inputs} sequence:}
+\begin{itemize}
+  \item structure arrays
+  \item cell arrays
+  \item vectors and matrices
+\end{itemize}
+\end{block}
+\emphconc{Kind of \mcode{arrayfun}, \mcode{cellfun}, or \mcode{structfun}
+but with focus on \mcode{inputs} as a sequence/collection instead of its data types.}
+\end{onlyenv}
+
+\begin{onlyenv}<2>
+  \begin{itemize}
+    \item \mcode{uq_map(fun,S)}
+    \begin{figure}
+      \includegraphics[width=0.8\textwidth]{./figures/uq-map-structarray.png}
+    \end{figure}
+    \item \mcode{uq_map(fun,C)}
+    \begin{figure}
+      \includegraphics[width=0.8\textwidth]{./figures/uq-map-cellarray-expand-false.png}
+    \end{figure}
+  \end{itemize}
+\emphconc{Structure and cell arrays can contain most data users need.
+  Matrices and vectors are supported as a shortcut.}  
+\end{onlyenv}
+    
+% \begin{onlyenv}<3>
+% \emphconc{Structure and cell arrays can contain most data users need.
+% Matrices and vectors are useful as a shortcut.}
+%   \begin{itemize}
+%     \item \mcode{uq_map(fun,A)}
+%     \begin{figure}
+%       \includegraphics[width=0.9\textwidth]{./figures/uq-map-matrices-byelements.png}
+%     \end{figure}
+%     \item \mcode{uq_map(fun, A, 'MatrixMapping', 'ByRows')}
+%     \begin{figure}
+%       \includegraphics[width=0.9\textwidth]{./figures/uq-map-matrices-byrows.png}
+%     \end{figure}
+%   \end{itemize}
+% \end{onlyenv}
+
+% \begin{onlyenv}<4>
+% \emphconc{You can put most things in structure or cell arrays.
+% Matrices and vectors are useful as a shortcut.}
+%   \begin{itemize}
+%     \item \mcode{uq_map(fun, A, 'MatrixMapping, 'ByColumns')}
+%     \begin{figure}
+%       \includegraphics[width=0.9\textwidth]{./figures/uq-map-matrices-bycolumns.png}
+%     \end{figure}
+%   \end{itemize}
+% \end{onlyenv}
+
 \end{frame}
 
 %==============================================================================
 \begin{frame}[fragile]{Dispatched \texttt{uq\_map}}
+
+\begin{onlyenv}<1>
 \begin{lstlisting}[basicstyle=\large,numbers=none]
 uq_map(fun, inputs, DispatcherObj)
 \end{lstlisting}
+\end{onlyenv}
+
+\begin{onlyenv}<1>
+\begin{block}{\mcode{uq_map} is a dispatcher-aware function}
+\begin{itemize}
+  \item Its computation can be dispatched to a remote machine
+  \item It only requires remote \textsc{UQLab} only if \textsc{UQLab}'s functionalities are used
+  \item Support advanced functionalities,
+        e.g., attached files (functions and data) for a specific computation.
+  \item Same workflow as dispatched \mcode{uq_evalModel}
+\end{itemize}
+\end{block}
+\end{onlyenv}
+
+\begin{onlyenv}<2>
+\begin{itemize}
+  \item Dispatch a \mcode{uq_map} computation:
+\end{itemize}
+\begin{lstlisting}[numbers=none]
+>> inputs = {linspace(1,10); linspace(1,100);... 
+        linspace(1,1000); rand(10,3)};
+>> uq_map(@sum, inputs, myDispatcher)
+\end{lstlisting}
+\begin{itemize}
+  \item Get the status of a dispatched computation:
+\end{itemize}
+\begin{lstlisting}[numbers=none]
+>> uq_getStatus(myDispatcher)
+ans =
+    'complete'
+\end{lstlisting}
+\begin{itemize}
+  \item Fetch the results:
+\end{itemize}
+\begin{lstlisting}[numbers=none]
+>> Y = uq_fetchResults(myDispatcher)
+Y =
+  4x1 cell array
+    {[     550]}
+    {[    5050]}
+    {[   50050]}
+    {1x3 double}
+\end{lstlisting}
+\end{onlyenv}
+
 \end{frame}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Additional notes on dispatched computations}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%==============================================================================
+\begin{frame}
+  \vfill
+  \centering
+  \begin{beamercolorbox}[sep=8pt,center,shadow=true,rounded=true]{title}
+  \usebeamerfont{title}
+  Notes on more advanced features of the \textsc{dispatcher} module\par%
+\end{beamercolorbox}
+\vfill
+\end{frame}
 
 %==============================================================================
 \begin{frame}[fragile]{Notes on synchronization}
@@ -595,7 +743,7 @@ Job Status: 'complete' reached.
 %==============================================================================
 \begin{frame}[fragile]{Notes on synchronization}
 
-Users can also dispatch a computation with {\altx synchronized} mode, e.g.:
+Users can also dispatch a computation in {\altx synchronized} mode, e.g.:
 \begin{lstlisting}[numbers=none]
 >> Y = uq_map(fun, inputs, DispatcherObj,...
               'Synchronized', true)
@@ -649,15 +797,16 @@ Y =
 %==============================================================================
 \begin{frame}[fragile]{Notes on multiple dispatched computations}
 
-Due to asynchronous execution, multiple computations can be dispatched to the remote machine
-before any of the executions have been finished:
+\emphconc{Users may dispatch multiple computations to the remote machine
+before any of the executions have been finished}
 \begin{lstlisting}[numbers=none]
-uq_evalModel(myModel, X1, 'HPC')
-uq_evalModel(myModel, X2, 'HPC')
-uq_evalModel(myModel, X3, 'HPC')
-uq_map(@sum, X4, myDispatcher)
+uq_evalModel(myModel, X1, 'HPC');
+uq_evalModel(myModel, X2, 'HPC');
+uq_evalModel(myModel, X3, 'HPC');
+uq_map(@sum, X4, myDispatcher);
 \end{lstlisting}
 
+\begin{onlyenv}<1>
 To list of all the dispatched computations associated with a \textsc{dispatcher} object:
 \begin{lstlisting}[numbers=none]
 >> uq_listJobs(myDispatcher)
@@ -669,6 +818,11 @@ No.  Job ID  Status     Tag                             ...
   3  2577    submitted  uq_evalModel of <Model 1> on <26...
   4  2578    submitted  uq_map of <sum> on <26-Oct-2020 ...
 \end{lstlisting}
+\end{onlyenv}
+
+\begin{onlyenv}<2>
+\emphconc{\textcolor{red}{Without a job scheduler, the remote machine can be flooded!}}
+\end{onlyenv}
 
 \end{frame}
 
@@ -694,6 +848,30 @@ No.  Job ID  Status     Tag                             ...
 \emphconc{As long as the directory in the remote machine remains intact}
 
 \end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Use case: Dispatched \textsc{UQLink}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%==============================================================================
+\begin{frame}[fragile]
+\frametitle{Use case: \textsc{UQLink} \textsc{model} evaluation in a cloud cluster}
+
+An example of distributed computing on a ({\altx \textbf{not}} high performance) cluster 
+\begin{itemize}
+  \item Input files are created locally
+  \item 3rd-party code is executed on the remote (must be installed there) 
+  \item Output files are parsed locally
+\end{itemize}
+  
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{./figures/dispatch-droplet.pdf}
+\end{figure}
+
+\end{frame}
+
 
 \section{Parametric study}
 %==============================================================================
