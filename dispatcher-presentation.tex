@@ -58,142 +58,113 @@ Quantification -- ETH Z\"urich}
 
 \begin{document}
 
-%===============================================================================
-
+%%%%%%%%%%%%%%%%%%%%
 \section{Motivation}
+%%%%%%%%%%%%%%%%%%%%
 
-\begin{frame}{Some problems users might have}
+%===============================================================================
+\begin{frame}{Background}
 
+\begin{block}{Some problems \textsc{UQLab} users might have:}
 \begin{itemize}
-  \item Dispatcher module has been updated: asynchronous mode of execution and 
-        a \emph{dispatch-and-fetch} workflow
-  \item Two dispatcher-aware functions are available:\\
-        \mcode{uq_evalModel} and \mcode{uq_map}.
+  \item They need to run long-running computation; they only have their laptops\\
+        \onslide<2>{\textcolor{myviolet}{$\rightarrow$ freeing up local computing resources}}
+  \item They need to run computations with large memory or CPU requirements\\
+        \onslide<2>{\textcolor{myviolet}{$\rightarrow$ exceptional resources (CPU, memory) requirement}}
+  \item Their simulation code only runs in Linux with, possibly, special licensing
+        \onslide<2>{\textcolor{myviolet}{$\rightarrow$ compatibility and licensing issues}}
 \end{itemize}
-
-\begin{figure}
-  \centering
-  \includegraphics[width=1.0\linewidth]{./figures/dispatch-and-fetch.pdf}
-\end{figure}
-
-\end{frame}
-
-
-\begin{frame}[fragile]{Distributed computing resources might help...}
-
-\begin{enumerate}
-  \setcounter{enumi}{-1}
-  \item Create a \textsc{Dispatcher} object
-  \item Create a set of configuration options:
-\end{enumerate}
-\begin{lstlisting}[basicstyle=\scriptsize,numbers=none]
-ParamsOpts.Type = 'Metamodel';
-ParamsOpts.MetaType = 'Kriging';
-
-ParamsOpts.Trend.Type = {'polynomial'};
-ParamsOpts.Trend.Degree = {0,1,2};
-
-ParamsOpts.Corr.Type = {'ellipsoidal', 'separable'};
-ParamsOpts.Corr.Family = {'linear', 'exponential', 'gaussian',...
-    'matern-3_2','matern-5_2'};
-ParamsOpts.Corr.Isotropic = {true, false};
-
-ParamsOpts.EstimMethod = {'CV','ML'};
-  
-ParamsOpts.Optim.Method = {'BFGS', 'GA', 'HGA', 'CMAES', 'HCMAES'};
-  
-ParamsOpts.ExpDesign.X = {Xtrain};
-ParamsOpts.ExpDesign.Y = {Ytrain};
-ParamsOpts.ValidationSet.X = {Xval};
-ParamsOpts.ValidationSet.Y = {Yval};
-
-% Create the set, 600 configuration options (struct array)
-ParamSets = uq_createParameterSets(ParamsOpts); 
-\end{lstlisting}
-
-\end{frame}
-
-\begin{frame}[fragile]{Distributed computing resources might help, but...}
-
-\begin{enumerate}
-  \setcounter{enumi}{1}
-  \item \emph{Map} the set of configurations options using \mcode{uq_createModel}\\
-         and dispatch the calculation to the remote machine:
-\begin{lstlisting}[basicstyle=\scriptsize]
-uq_map(@uq_createModel, ParamSets, myDispatcher, 'UQLab', true)
-\end{lstlisting}
-  \item (when finished) \emph{Fetch} all the Kriging objects from the remote machine:
-\begin{lstlisting}[basicstyle=\scriptsize]
-myModels = uq_fetchResults(myDispatcher)
-ans =
-
-  600x1 cell array
-
-    {1x1 uq_model}
-    {1x1 uq_model}
-    {1x1 uq_model}
-    {1x1 uq_model}
-    {1x1 uq_model}
-    {1x1 uq_model}
-    ...
-\end{lstlisting}
-  \item Analyze the resulting objects (\eg{,} compare LOO and validation errors)
-\end{enumerate}
-
-\begin{itemize}
-  \item On-going tasks: Documentation writeup and some additional testings
-\end{itemize}
+\end{block}
 
 \end{frame}
 
 %==============================================================================
 \begin{frame}
-\frametitle{Distributed computing resources might help, but...}
-\begin{block}{Your institution has distributed computing resources, so you:}
+\frametitle{Background}
+
+\begin{block}{Distributed computing resources might help:}
+\begin{itemize}
+  \item They are highly available round the clock
+        \onslide<2>{(\textcolor{myviolet}{\textbf{not always}})}
+  \item They have massive amount of high-performance CPUs, memory, and storage
+        \onslide<2>{(\textcolor{myviolet}{\textbf{not always}})}
+  \item They come with expensive software installed with shared licenses
+        \onslide<2>{(\textcolor{myviolet}{\textbf{not always}})}
+\end{itemize}
+\end{block}
+
+\begin{onslide}<2>
+\begin{block}{Distributed computing resources come in many forms and flavors}
+  \begin{columns}
+    \begin{column}{.3\linewidth}\centering
+    \includegraphics<2>[width=0.65\linewidth]{Beowulf}\\
+    \only<2>{{\tiny Credit: Wikipedia, GPL v3}}
+    \end{column}
+    \begin{column}{.3\linewidth}\centering
+    \includegraphics<2>[width=\linewidth]{blue-gene}\\ 
+    \only<2>{{\tiny Credit:Argonne National Lab.,CC BY-SA2.0}}
+    \end{column}
+    \begin{column}{.3\linewidth}\centering
+    \includegraphics<2>[width=0.75\linewidth]{blue-paper-with-clouds}\\
+    \only<2>{{\tiny Credit: Zamurovic Brothers (Noun Project)}}
+    \end{column}
+    \end{columns}
+\end{block}
+\end{onslide}
+
+\end{frame}
+
+%==============================================================================
+\begin{frame}
+\frametitle<1>{Distributed computing resources might help}
+\frametitle<2>{Distributed computing resources might help, but...}
+
+\begin{block}{Your institution provides distributed computing resources, so you:}
 \begin{enumerate}
-  \item ask/look around how to get an access
+  \item ask or look around how to get an access
   \item get an access (username, password, computing time, storage space)
   \item read the Wiki
   \item are ready for some distributed computing \only<2>{{\altx (right?)}}
 \end{enumerate}
 \end{block}
-\begin{block}{\textbf{EULER}: Large HPC infrastructure of the ETHZ}
+
+\begin{block}{\textbf{EULER}: The large HPC infrastructure of the ETHZ}
 \begin{figure}[htbp]
   \includegraphics[width=\textwidth]{./figures/ETH_Zurich_Euler_II_and_I_in_LCA}\\
   {\tiny Credit: Olivier Byrde, ETH Zurich (2015)}
-%  \hspace*{15pt}\hbox{\scriptsize Credit:\thinspace{\small\itshape Kathleen Gilje}}
 \end{figure}
 \end{block}
+
 \end{frame}
 
 %==============================================================================
 \begin{frame}
-\frametitle<1-8>{Distributed computing in 7 easy steps}
-\frametitle<9>{Distributed computing in 7 (\emph{not so}) easy steps}
+\frametitle<1-7>{Distributed computing in 7 easy steps}
+\frametitle<8>{Distributed computing in 7 (\emph{not so}) easy steps}
 \begin{columns}
 \column{0.4\textwidth}
 \setbeamercovered{invisible}
 \begin{block}{The steps:}
 \begin{enumerate}
   \item<2-> Log in to the remote machine
-  \item<4-> Create an analysis script to run in the remote
-  \item<5-> Create a job script
-  \item<6-> Submit the job to the queues
-  \item<7-> Check the queues until job is finished
-  \item<8-> Transfer output files back (\texttt{scp},\texttt{rsync})
-  \item<9-> Analyze the outputs in the local machine
+  \item<3-> Create an analysis script to run in the remote
+  \item<4-> Create a job script
+  \item<5-> Submit the job to the queues
+  \item<6-> Check the queues until job is finished
+  \item<7-> Transfer output files back (\texttt{scp}, \texttt{rsync})
+  \item<8-> Analyze the outputs in the local machine
 \end{enumerate}
 \end{block}
 \column{0.6\textwidth}
-\begin{onlyenv}<2-9>
+\begin{onlyenv}<2-8>
 \begin{figure}[htbp]
-  \includegraphics<2-3>[width=\textwidth]{./figures/terminal-small.png}
-  \includegraphics<4>[width=\textwidth]{./figures/remote-script.png}
-  \includegraphics<5>[width=\textwidth]{./figures/job-script.png}
-  \includegraphics<6>[width=\textwidth]{./figures/queues.png}
-  \includegraphics<7>[width=\textwidth]{./figures/check-queues.png}
-  \includegraphics<8>[width=\textwidth]{./figures/scp.png}
-  \includegraphics<9>[width=\textwidth]{./figures/matlab.png}
+  \includegraphics<2>[width=\textwidth]{./figures/terminal-small.png}
+  \includegraphics<3>[width=\textwidth]{./figures/remote-script.png}
+  \includegraphics<4>[width=\textwidth]{./figures/job-script.png}
+  \includegraphics<5>[width=\textwidth]{./figures/queues.png}
+  \includegraphics<6>[width=\textwidth]{./figures/check-queues.png}
+  \includegraphics<7>[width=\textwidth]{./figures/scp.png}
+  \includegraphics<8>[width=\textwidth]{./figures/matlab.png}
 \end{figure}
 \end{onlyenv}
 \setbeamercovered{transparent}
@@ -241,7 +212,7 @@ ans =
 \end{onslide}
 
 \begin{onslide}<3->
-  \begin{block}{...and less about:}
+  \begin{block}{...and less about (if at all):}
     \begin{itemize}
       \item Distributed computing system and organization
       \item Parallel algorithms and programming
@@ -291,7 +262,7 @@ uq_map(|\textcolor<2>{myviolet}{fun}|,|\textcolor<3>{myviolet}{inputs}|)
 
   
 
-
+%=================================================================================
 \begin{frame}[fragile]{D. Wicaksono: Parametric studies with \mcode{uq_map} (2/2)}
 
 \begin{lstlisting}[basicstyle=\scriptsize,numbers=none]
@@ -344,7 +315,8 @@ ans =
 \end{onlyenv}
 
 \begin{onlyenv}<3->
-Let's assume a \textsc{Dispatcher} object has been created ({\altx more on this later }).
+Let's assume a \textsc{Dispatcher} object has been created
+and stored in a variable \mcode{myDispatcher} ({\altx more on this later}).
 Dispatch the same \textsc{Model} evaluation to the remote machine:
 \begin{lstlisting}[basicstyle=\scriptsize,numbers=none]
 >> uq_evalModel([0.5*pi 0.5*pi 0.5*pi],'HPC')
@@ -434,7 +406,7 @@ ans =
 \end{frame}
 
 %==============================================================================
-\begin{frame}[fragile]{Dispatcher in action: \emph{Fetch results}}
+\begin{frame}[fragile]{Dispatcher in action: \emph{Fetch} the results}
 
 \begin{lstlisting}[basicstyle=\scriptsize,numbers=none]
 >> results = uq_fetchResults(myDispatcher)
@@ -452,9 +424,9 @@ results =
 \end{frame}
 
 %==============================================================================
-\begin{frame}[fragile]{Backtrack: Setting up a Dispatcher object}
+\begin{frame}[fragile]{Backtracking: Setting up a Dispatcher object}
 
-\onslide<1->{\begin{block}{What you need to set up and use a Dispatcher object}
+\only<1-3>{\begin{block}{What you need to set up and use a \textsc{Dispatcher} object}
 \begin{itemize}
   \item An access to a remote machine; it must run a Linux OS and has an MPI implementation
   \item A directory with write access permission in the remote machine
@@ -463,20 +435,10 @@ results =
 \end{itemize}
 \end{block}}
 
-\end{frame}
+\only<4>{\emphconc{No \textsc{MATLAB}/\textsc{UQLab} in the remote machine is required
+for \textsc{UQLink} model evaluation}}
 
-%==============================================================================
-\begin{frame}[fragile]{Backtrack: Setting up a Dispatcher object}
-
-\begin{block}{What you need to set up and use a Dispatcher object}
-\begin{itemize}
-  \item An access to a remote machine; it must run a Linux OS and has an MPI implementation
-  \item A directory with write access permission in the remote machine
-  \item A passwordless SSH connection to the remote machine
-  \item A profile file that stores required information about the remote machine 
-\end{itemize}
-\end{block}
-  
+\begin{onslide}<2->
 An example of a (minimum) remote machine profile file (\texttt{myProfile.m}):
 \begin{lstlisting}[basicstyle=\scriptsize]
 Hostname = 'euler.ethz.ch';
@@ -484,7 +446,17 @@ Username = 'wdamar';
 PrivateKey = '~/.ssh/id_rsa_dispatcher';
 RemoteFolder = '/home/wdamar/temp';
 \end{lstlisting}
+\end{onslide}
+
+\begin{onslide}<3->
+In a \textsc{UQLab} session:
+\begin{lstlisting}[basicstyle=\scriptsize,numbers=none]
+DispatcherOpts.Profile = 'myProfile';
   
+myDispatcher = uq_createDispatcher(DispatcherOpts);
+\end{lstlisting}
+\end{onslide}
+
 \end{frame}
 
 %==============================================================================
@@ -750,4 +722,90 @@ No.  Job ID  Status     Tag                             ...
 \begin{frame}[fragile]{Summary}
 \end{frame}
 
+
+%===============================================================================
+\begin{frame}{Some problems users might have}
+
+  \begin{itemize}
+    \item Dispatcher module has been updated: asynchronous mode of execution and 
+          a \emph{dispatch-and-fetch} workflow
+    \item Two dispatcher-aware functions are available:\\
+          \mcode{uq_evalModel} and \mcode{uq_map}.
+  \end{itemize}
+  
+  \begin{figure}
+    \centering
+    \includegraphics[width=1.0\linewidth]{./figures/dispatch-and-fetch.pdf}
+  \end{figure}
+  
+  \end{frame}
+  
+  
+  \begin{frame}[fragile]{Distributed computing resources might help...}
+  
+  \begin{enumerate}
+    \setcounter{enumi}{-1}
+    \item Create a \textsc{Dispatcher} object
+    \item Create a set of configuration options:
+  \end{enumerate}
+  \begin{lstlisting}[basicstyle=\scriptsize,numbers=none]
+  ParamsOpts.Type = 'Metamodel';
+  ParamsOpts.MetaType = 'Kriging';
+  
+  ParamsOpts.Trend.Type = {'polynomial'};
+  ParamsOpts.Trend.Degree = {0,1,2};
+  
+  ParamsOpts.Corr.Type = {'ellipsoidal', 'separable'};
+  ParamsOpts.Corr.Family = {'linear', 'exponential', 'gaussian',...
+      'matern-3_2','matern-5_2'};
+  ParamsOpts.Corr.Isotropic = {true, false};
+  
+  ParamsOpts.EstimMethod = {'CV','ML'};
+    
+  ParamsOpts.Optim.Method = {'BFGS', 'GA', 'HGA', 'CMAES', 'HCMAES'};
+    
+  ParamsOpts.ExpDesign.X = {Xtrain};
+  ParamsOpts.ExpDesign.Y = {Ytrain};
+  ParamsOpts.ValidationSet.X = {Xval};
+  ParamsOpts.ValidationSet.Y = {Yval};
+  
+  % Create the set, 600 configuration options (struct array)
+  ParamSets = uq_createParameterSets(ParamsOpts); 
+  \end{lstlisting}
+  
+  \end{frame}
+  
+  \begin{frame}[fragile]{Distributed computing resources might help, but...}
+  
+  \begin{enumerate}
+    \setcounter{enumi}{1}
+    \item \emph{Map} the set of configurations options using \mcode{uq_createModel}\\
+           and dispatch the calculation to the remote machine:
+  \begin{lstlisting}[basicstyle=\scriptsize]
+  uq_map(@uq_createModel, ParamSets, myDispatcher, 'UQLab', true)
+  \end{lstlisting}
+    \item (when finished) \emph{Fetch} all the Kriging objects from the remote machine:
+  \begin{lstlisting}[basicstyle=\scriptsize]
+  myModels = uq_fetchResults(myDispatcher)
+  ans =
+  
+    600x1 cell array
+  
+      {1x1 uq_model}
+      {1x1 uq_model}
+      {1x1 uq_model}
+      {1x1 uq_model}
+      {1x1 uq_model}
+      {1x1 uq_model}
+      ...
+  \end{lstlisting}
+    \item Analyze the resulting objects (\eg{,} compare LOO and validation errors)
+  \end{enumerate}
+  
+  \begin{itemize}
+    \item On-going tasks: Documentation writeup and some additional testings
+  \end{itemize}
+  
+  \end{frame}
+  
 \end{document}
