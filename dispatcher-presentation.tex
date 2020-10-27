@@ -175,8 +175,30 @@ Quantification -- ETH Z\"urich}
 \begin{frame}
 \frametitle{Users vs. Machine}
 \begin{figure}[htbp]
-  \includegraphics[width=\textwidth]{./figures/dispatcher-gap.pdf}
+  \includegraphics[width=0.9\textwidth]{./figures/dispatcher-gap.pdf}
 \end{figure}
+
+\begin{columns}
+  \begin{column}{0.5\linewidth}
+    \begin{block}{Users are used to:}
+      \begin{itemize}
+        \item {\altx synchronous execution}: immediate execution
+        \item {\altx local storage}: results are available on completion
+        \item {\altx think of a serial program}: easier to debug
+      \end{itemize}
+    \end{block}
+  \end{column}
+  \begin{column}{0.5\linewidth}
+    \begin{block}{Now, users have to get used to:}
+      \begin{itemize}
+        \item {\altx asynchronous execution}: schedule and submit an execution
+        \item {\altx remote storage}: results must be retrieved
+        \item {\altx think of parallel program}: harder to debug (e.g., race conditions)
+      \end{itemize}
+    \end{block}
+  \end{column}
+\end{columns}
+
 \end{frame}
   
 %==============================================================================
@@ -236,16 +258,6 @@ Watch this slide grow.
   
 \end{frame}
 
-\begin{frame}[fragile]
-  \frametitle{Including Code}
-  \begin{semiverbatim}
-  \\begin\{frame\}
-  \\frametitle\{Outline\}
-  \\tableofcontents
-  \\end\{frame\}
-  \end{semiverbatim}
-\end{frame}
-
 \begin{frame}[fragile]{\texttt{uq\_map}: Mapping function}
 
 \begin{lstlisting}
@@ -258,38 +270,9 @@ uq_map(|\textcolor<2>{myviolet}{fun}|,|\textcolor<3>{myviolet}{inputs}|)
 
 \end{frame}
 
-
-
-  
-
-%=================================================================================
-\begin{frame}[fragile]{D. Wicaksono: Parametric studies with \mcode{uq_map} (2/2)}
-
-\begin{lstlisting}[basicstyle=\scriptsize,numbers=none]
->> uq_evalModel(myModel,X)
-
-\end{lstlisting}
-  
-\end{frame}
-
-\begin{frame}[fragile]{D. Wicaksono: Parametric studies with \mcode{uq_map} (2/2)}
-
-\begin{lstlisting}[basicstyle=\scriptsize,numbers=none]
->> uq_evalModel(myModel,X,'HPC')
-
-ans =
-
-     []
-\end{lstlisting}
-
-\setbeamercovered{invisible}
-\onslide<2->{\emphconc{Whoa}}
-\setbeamercovered{transparent}
-
-\end{frame}
-
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{\textsc{Dispatcher} in action}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %==============================================================================
 \begin{frame}[fragile]
